@@ -98,12 +98,8 @@ builder.Services.AddCors(options =>
 
 // Add services to the container - FIXED dependency injection
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IPasswordService, PasswordService>(); // Fixed: removed interface as implementation
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>(); // Fixed: removed interface as implementation
-
-// Add additional services
-//builder.Services.AddScoped<IEmailService, EmailService>();
-//builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>(); 
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>(); 
 
 // Add caching
 builder.Services.AddMemoryCache();
@@ -149,16 +145,6 @@ builder.Services.AddControllers(options =>
     options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
-//// Add API versioning
-//builder.Services.AddApiVersioning(options =>
-//{
-//    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
-//    options.AssumeDefaultVersionWhenUnspecified = true;
-//    options.ApiVersionReader = Microsoft.AspNetCore.Mvc.ApiVersionReader.Combine(
-//        new Microsoft.AspNetCore.Mvc.QueryStringApiVersionReader("version"),
-//        new Microsoft.AspNetCore.Mvc.HeaderApiVersionReader("X-Version")
-//    );
-//});
 
 // Configure OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -260,52 +246,5 @@ app.MapHealthChecks("/health");
 // Map controllers
 app.MapControllers();
 
-//// Seed data in development
-//if (app.Environment.IsDevelopment())
-//{
-//    using var scope = app.Services.CreateScope();
-//    var context = scope.ServiceProvider.GetRequiredService<SchoolManagementDbContext>();
-//    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-
-//    await SeedDataAsync(context, userManager, roleManager);
-//}
-
 app.Run();
 
-// Seed data method
-//static async Task SeedDataAsync(SchoolManagementDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
-//{
-//    // Ensure database is created
-//    await context.Database.EnsureCreatedAsync();
-
-//    // Create roles
-//    string[] roleNames = { "Admin", "Teacher", "Student" };
-//    foreach (var roleName in roleNames)
-//    {
-//        if (!await roleManager.RoleExistsAsync(roleName))
-//        {
-//            await roleManager.CreateAsync(new IdentityRole(roleName));
-//        }
-//    }
-
-//    //// Create admin user
-//    //var adminEmail = "admin@schoolmanager.com";
-//    //if (await userManager.FindByEmailAsync(adminEmail) == null)
-//    //{
-//    //    var adminUser = new ApplicationUser
-//    //    {
-//    //        UserName = adminEmail,
-//    //        Email = adminEmail,
-//    //        EmailConfirmed = true,
-//    //        FirstName = "System",
-//    //        LastName = "Administrator"
-//    //    };
-
-//    //    var result = await userManager.CreateAsync(adminUser, "Admin123!");
-//    //    if (result.Succeeded)
-//    //    {
-//    //        await userManager.AddToRoleAsync(adminUser, "Admin");
-//    //    }
-//    //}
-//}

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SchoolManager.DTOs;
 using SchoolManager.Models;
 using SchoolManager.Services;
 using System.ComponentModel.DataAnnotations;
@@ -15,134 +15,344 @@ namespace SchoolManager.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
+        private readonly IPasswordService _passwordService;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             IAuthenticationService authService,
-            UserManager<ApplicationUser> userManager)
+            IUserService userService,
+            IPasswordService passwordService,
+            ILogger<AuthController> logger)
         {
             _authService = authService;
-            _userManager = userManager;
+            _userService = userService;
+            _passwordService = passwordService;
+            _logger = logger;
         }
 
+        /// <summary>
+        /// Authenticate user with email and password
+        /// </summary>
         [HttpPost("login")]
-        [EnableRateLimiting("AuthPolicy")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<ApiResponse<AuthenticationResult>>> Login([FromBody] LoginRequest request)
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var ipAddress = GetClientIpAddress();
                 var result = await _authService.AuthenticateAsync(request.Email, request.Password, ipAddress);
 
-                if (result == null)
-                    return Unauthorized(new { message = "Invalid credentials" });
-
-                return Ok(new
+                if (result.Success)
                 {
-                    Token = result.AccessToken,
-                    RefreshToken = result.RefreshToken,
-                    ExpiresIn = result.ExpiryDate
+                    _logger.LogInformation("User {Email} logged in successfully", request.Email);
+                    return Ok(new ApiResponse<AuthenticationResult>
+                    {
+                        Success = true,
+                        Data = result,
+                        Message = "Login successful"
+                    });
+                }
+
+                _logger.LogWarning("Failed login attempt for {Email}", request.Email);
+                return BadRequest(new ApiResponse<AuthenticationResult>
+                {
+                    Success = false,
+                    Message = result.ErrorMessage ?? "Login failed",
+                    Errors = result.Errors
                 });
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, new { message = "An error occurred during authentication" });
+                _logger.LogError(ex, "Error during login for {Email}", request.Email);
+                return StatusCode(500, new ApiResponse<AuthenticationResult>
+                {
+                    Success = false,
+                    Message = "An error occurred during login"
+                });
             }
         }
 
-        [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        /// <summary>
+        /// Refresh authentication token
+        /// </summary>
+        [HttpPost("refresh")]
+        public async Task<ActionResult<ApiResponse<AuthenticationResult>>> RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var result = await _authService.RefreshTokenAsync(request.RefreshToken, ipAddress);
-
-            if (result == null)
-                return Unauthorized(new { message = "Invalid token" });
-
-            return Ok(new
+            try
             {
-                Token = result.AccessToken,
-                RefreshToken = result.RefreshToken,
-                ExpiresIn = result.ExpiryDate
-            });
+                var ipAddress = GetClientIpAddress();
+                var result = await _authService.RefreshTokenAsync(request.RefreshToken, ipAddress);
+
+                if (result.Success)
+                {
+                    return Ok(new ApiResponse<AuthenticationResult>
+                    {
+                        Success = true,
+                        Data = result,
+                        Message = "Token refreshed successfully"
+                    });
+                }
+
+                return BadRequest(new ApiResponse<AuthenticationResult>
+                {
+                    Success = false,
+                    Message = result.ErrorMessage ?? "Token refresh failed",
+                    Errors = result.Errors
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during token refresh");
+                return StatusCode(500, new ApiResponse<AuthenticationResult>
+                {
+                    Success = false,
+                    Message = "An error occurred during token refresh"
+                });
+            }
         }
 
+        /// <summary>
+        /// Logout current session
+        /// </summary>
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout()
+        public async Task<ActionResult<ApiResponse<bool>>> Logout()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userIdGuid))
-                return BadRequest(new { message = "Invalid user context" });
+            try
+            {
+                var userId = GetCurrentUserId();
+                var sessionToken = GetSessionToken();
 
-            var sessionToken = User.FindFirstValue("sessionToken");
-            await _authService.LogoutAsync(userIdGuid, sessionToken);
+                var result = await _authService.LogoutAsync(userId, sessionToken);
 
-            // Clear any cookies if using them
-            Response.Cookies.Delete("refreshToken");
+                if (result)
+                {
+                    _logger.LogInformation("User {UserId} logged out successfully", userId);
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Data = true,
+                        Message = "Logout successful"
+                    });
+                }
 
-            return Ok(new { message = "Logged out successfully" });
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Logout failed"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during logout");
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "An error occurred during logout"
+                });
+            }
         }
 
+        /// <summary>
+        /// Logout all sessions for current user
+        /// </summary>
+        [HttpPost("logout-all")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponse<bool>>> LogoutAllSessions()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var result = await _authService.LogoutAllSessionsAsync(userId);
+
+                if (result)
+                {
+                    _logger.LogInformation("All sessions logged out for user {UserId}", userId);
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Data = true,
+                        Message = "All sessions logged out successfully"
+                    });
+                }
+
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Failed to logout all sessions"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during logout all sessions");
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "An error occurred during logout"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Generate two-factor authentication token
+        /// </summary>
         [HttpPost("two-factor/generate")]
         [Authorize]
-        public async Task<IActionResult> GenerateTwoFactorToken([FromQuery] string tokenType)
+        public async Task<ActionResult<ApiResponse<string>>> GenerateTwoFactorToken([FromQuery] string tokenType = "SMS")
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userId, out var userIdGuid))
-                return BadRequest();
+            try
+            {
+                var userId = GetCurrentUserId();
+                var token = await _authService.GenerateTwoFactorTokenAsync(userId, tokenType);
 
-            var token = await _authService.GenerateTwoFactorTokenAsync(userIdGuid, tokenType);
-            return Ok(new { Token = token });
+                return Ok(new ApiResponse<string>
+                {
+                    Success = true,
+                    Data = token,
+                    Message = $"Two-factor token sent via {tokenType}"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating two-factor token");
+                return StatusCode(500, new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while generating two-factor token"
+                });
+            }
         }
 
+        /// <summary>
+        /// Validate two-factor authentication token
+        /// </summary>
         [HttpPost("two-factor/validate")]
-        [Authorize]
-        public async Task<IActionResult> ValidateTwoFactorToken([FromBody] ValidateTokenRequest request)
+        public async Task<ActionResult<ApiResponse<bool>>> ValidateTwoFactorToken([FromBody] TwoFactorRequest request)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userId, out var userIdGuid))
-                return BadRequest();
+            try
+            {
+                var isValid = await _authService.ValidateTwoFactorTokenAsync(request.UserId, request.Token, request.TokenType);
 
-            var isValid = await _authService.ValidateTwoFactorTokenAsync(userIdGuid, request.Token, request.TokenType);
-            return Ok(new { IsValid = isValid });
+                return Ok(new ApiResponse<bool>
+                {
+                    Success = true,
+                    Data = isValid,
+                    Message = isValid ? "Token is valid" : "Token is invalid"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating two-factor token");
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "An error occurred while validating token"
+                });
+            }
         }
 
-        [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        /// <summary>
+        /// Request password reset token
+        /// </summary>
+        [HttpPost("password/reset-request")]
+        public async Task<ActionResult<ApiResponse<string>>> RequestPasswordReset([FromBody] string email)
         {
-            // Implementation for password reset
+            try
+            {
+                var user = await _userService.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    // Don't reveal if email exists
+                    return Ok(new ApiResponse<string>
+                    {
+                        Success = true,
+                        Message = "If the email exists, a reset link will be sent"
+                    });
+                }
+
+                var token = await _userService.GeneratePasswordResetTokenAsync(user.Id);
+
+                return Ok(new ApiResponse<string>
+                {
+                    Success = true,
+                    Data = token,
+                    Message = "Password reset token generated"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error requesting password reset");
+                return StatusCode(500, new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while processing password reset request"
+                });
+            }
         }
 
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        /// <summary>
+        /// Reset password with token
+        /// </summary>
+        [HttpPost("password/reset")]
+        public async Task<ActionResult<ApiResponse<bool>>> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            // Implementation for password reset
+            try
+            {
+                var user = await _userService.GetUserByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    return BadRequest(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Invalid reset request"
+                    });
+                }
+
+                var result = await _userService.ResetPasswordAsync(user.Id, request.Token, request.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("Password reset successful for user {Email}", request.Email);
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Data = true,
+                        Message = "Password reset successful"
+                    });
+                }
+
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Password reset failed",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during password reset");
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "An error occurred during password reset"
+                });
+            }
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        private Guid GetCurrentUserId()
         {
-            // Implementation for user registration
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
         }
-    }
 
-    public class RefreshTokenRequest
-    {
-        [Required]
-        public string RefreshToken { get; set; }
-    }
+        private string? GetSessionToken()
+        {
+            return Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        }
 
-    public class ValidateTokenRequest
-    {
-        [Required]
-        public string Token { get; set; }
-
-        [Required]
-        public string TokenType { get; set; }
+        private string GetClientIpAddress()
+        {
+            return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        }
     }
 }

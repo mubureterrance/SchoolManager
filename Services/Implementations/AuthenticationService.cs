@@ -126,7 +126,7 @@ namespace SchoolManager.Services.Implementations
                     Success = true,
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
-                    ExpiryDate = DateTime.UtcNow.AddMinutes(GetTokenExpirationMinutes()),
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(GetTokenExpirationMinutes()),
                     User = user
                 };
             }
@@ -193,7 +193,7 @@ namespace SchoolManager.Services.Implementations
                     Success = true,
                     AccessToken = accessToken,
                     RefreshToken = newRefreshToken,
-                    ExpiryDate = DateTime.UtcNow.AddMinutes(GetTokenExpirationMinutes()),
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(GetTokenExpirationMinutes()),
                     User = user
                 };
             }
