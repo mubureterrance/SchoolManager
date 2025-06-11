@@ -59,7 +59,7 @@ namespace SchoolManager.DTOs
         public string? MiddleName { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
-        public string? Gender { get; set; }
+        public Gender? Gender { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? Address { get; set; }
         public string? City { get; set; }
@@ -96,7 +96,7 @@ namespace SchoolManager.DTOs
         public string? PhoneNumber { get; set; }
 
         [StringLength(10)]
-        public string? Gender { get; set; }
+        public Gender? Gender { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
 
@@ -142,7 +142,7 @@ namespace SchoolManager.DTOs
         public string? PhoneNumber { get; set; }
 
         [StringLength(10)]
-        public string? Gender { get; set; }
+        public Gender? Gender { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
 

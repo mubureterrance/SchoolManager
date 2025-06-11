@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +10,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Login history tracking
     /// </summary>
-    public class UserLoginHistory
+    public class UserLoginHistory : IAuditableEntity
     {
         [Key]
         public Guid LoginHistoryId { get; set; }
@@ -37,6 +38,9 @@ namespace SchoolManager.Models
 
         [StringLength(100)]
         public string? Location { get; set; }
+
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
         public virtual ApplicationUser User { get; set; } = null!;

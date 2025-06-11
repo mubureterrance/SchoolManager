@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +10,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// System permissions/claims
     /// </summary>
-    public class Permission
+    public class Permission : IAuditableEntity
     {
         [Key]
         public Guid PermissionId { get; set; }
@@ -26,7 +27,8 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
         public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();

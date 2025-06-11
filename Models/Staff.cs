@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
@@ -6,7 +7,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Staff profile extending ApplicationUser
     /// </summary>
-    public class Staff
+    public class Staff : IAuditableEntity
     {
         [Key]
         public Guid StaffId { get; set; }
@@ -37,6 +38,9 @@ namespace SchoolManager.Models
         public bool IsActive { get; set; } = true;
 
         public DateTime? TerminationDate { get; set; }
+
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
         public virtual ApplicationUser User { get; set; } = null!;

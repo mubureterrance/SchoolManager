@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +10,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Password history for enforcing password policies
     /// </summary>
-    public class PasswordHistory
+    public class PasswordHistory : IAuditableEntity
     {
         [Key]
         public Guid PasswordHistoryId { get; set; }
@@ -20,7 +21,8 @@ namespace SchoolManager.Models
         [StringLength(500)]
         public string PasswordHash { get; set; } = string.Empty;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         [StringLength(100)]
         public string? CreatedBy { get; set; }

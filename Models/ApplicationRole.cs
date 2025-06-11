@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SchoolManager.Models.Base;
 using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
@@ -10,7 +11,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Extended Identity Role with additional properties
     /// </summary>
-    public class ApplicationRole : IdentityRole<Guid>
+    public class ApplicationRole : IdentityRole<Guid>, IAuditableEntity
     {
         [StringLength(500)]
         public string? Description { get; set; }
@@ -19,7 +20,8 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         [StringLength(100)]
         public string? CreatedBy { get; set; }

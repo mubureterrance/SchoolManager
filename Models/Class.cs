@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +11,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Class/Grade information
     /// </summary>
-    public class Class
+    public class Class: IAuditableEntity
     {
         [Key]
         public Guid ClassId { get; set; }
@@ -30,10 +32,15 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
+        [ForeignKey("ClassTeacherId")]
         public virtual Staff? ClassTeacher { get; set; }
         public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+        public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+        public virtual ICollection<FeeStructure> FeeStructures { get; set; } = new List<FeeStructure>();
+
     }
 }

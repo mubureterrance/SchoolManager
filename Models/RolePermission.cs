@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
     /// <summary>
     /// Role-Permission junction table
     /// </summary>
-    public class RolePermission
+    public class RolePermission : IAuditableEntity
     {
         [Key]
         public Guid RolePermissionId { get; set; }
@@ -18,6 +19,8 @@ namespace SchoolManager.Models
 
         [StringLength(100)]
         public string? GrantedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
         public virtual ApplicationRole Role { get; set; } = null!;

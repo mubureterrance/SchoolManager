@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
@@ -6,12 +7,17 @@ namespace SchoolManager.Models
     /// <summary>
     /// Parent/Guardian profile extending ApplicationUser
     /// </summary>
-    public class Parent
+    public class Parent : IAuditableEntity
     {
         [Key]
         public Guid ParentId { get; set; }
 
+        [Required]
         public Guid UserId { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Relationship { get; set; } = string.Empty;
 
         [StringLength(50)]
         public string? Occupation { get; set; }
@@ -26,9 +32,13 @@ namespace SchoolManager.Models
         public decimal? AnnualIncome { get; set; }
 
         public bool IsActive { get; set; } = true;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
+        [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; } = null!;
         public virtual ICollection<StudentParent> StudentParents { get; set; } = new List<StudentParent>();
+        public virtual ICollection<Student> Students { get; set; } = new List<Student>();
     }
 }

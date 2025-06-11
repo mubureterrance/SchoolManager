@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +10,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Two-factor authentication tokens
     /// </summary>
-    public class TwoFactorToken
+    public class TwoFactorToken : IAuditableEntity
     {
         [Key]
         public Guid TokenId { get; set; }
@@ -23,7 +24,8 @@ namespace SchoolManager.Models
         [StringLength(20)]
         public string TokenType { get; set; } = string.Empty; // SMS, Email, Authenticator
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         public DateTime ExpiryDate { get; set; }
 

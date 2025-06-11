@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Claims;
 
 namespace SchoolManager.Models
@@ -10,7 +12,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Student profile extending ApplicationUser
     /// </summary>
-    public class Student
+    public class Student : IAuditableEntity
     {
         [Key]
         public Guid StudentId { get; set; }
@@ -23,7 +25,7 @@ namespace SchoolManager.Models
 
         public DateTime AdmissionDate { get; set; }
 
-        public Guid? CurrentClassId { get; set; }
+        public Guid? ClassId { get; set; }
 
         [StringLength(500)]
         public string? MedicalInfo { get; set; }
@@ -40,11 +42,20 @@ namespace SchoolManager.Models
         public bool IsActive { get; set; } = true;
 
         public DateTime? GraduationDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
+        [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; } = null!;
-        public virtual Class? CurrentClass { get; set; }
+
+        [ForeignKey("ClassId")]
+        public virtual Class? Class { get; set; }
         public virtual ICollection<StudentParent> StudentParents { get; set; } = new List<StudentParent>();
+        public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+        public virtual ICollection<ExamResult> ExamResults { get; set; } = new List<ExamResult>();
+        public virtual ICollection<FeePayment> FeePayments { get; set; } = new List<FeePayment>();
     }
 
 }

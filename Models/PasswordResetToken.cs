@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
     /// <summary>
     /// Password reset tokens
     /// </summary>
-    public class PasswordResetToken
+    public class PasswordResetToken : IAuditableEntity
     {
         [Key]
         public Guid TokenId { get; set; }
@@ -16,7 +17,8 @@ namespace SchoolManager.Models
         [StringLength(500)]
         public string Token { get; set; } = string.Empty;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         public DateTime ExpiryDate { get; set; }
 

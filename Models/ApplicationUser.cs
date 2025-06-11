@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SchoolManager.Enums;
+using SchoolManager.Models.Base;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,7 +13,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// Extended Identity User with additional properties for school management
     /// </summary>
-    public class ApplicationUser : IdentityUser<Guid>
+    public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity
     {
         [Required]
         [StringLength(50)]
@@ -28,7 +30,7 @@ namespace SchoolManager.Models
         public string FullName => $"{FirstName} {MiddleName} {LastName}".Replace("  ", " ").Trim();
 
         [StringLength(10)]
-        public string? Gender { get; set; }
+        public Gender? Gender { get; set; }
 
         public DateTime? DateOfBirth { get; set; }
 
@@ -55,7 +57,7 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
 
         public DateTime? LastModifiedDate { get; set; }
 

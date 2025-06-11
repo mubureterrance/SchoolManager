@@ -43,7 +43,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -67,7 +67,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
@@ -88,7 +88,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -107,7 +107,7 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("UserTokens", (string)null);
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.AccountLockout", b =>
@@ -154,6 +154,8 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("LockoutId");
 
+                    b.HasIndex("LockoutEndDate");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("AccountLockouts");
@@ -193,6 +195,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -202,6 +207,10 @@ namespace SchoolManager.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
@@ -442,6 +451,49 @@ namespace SchoolManager.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.Attendance", b =>
+                {
+                    b.Property<Guid>("AttendanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("AttendanceDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AttendanceId");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("StudentId", "ClassId", "AttendanceDate")
+                        .IsUnique();
+
+                    b.ToTable("Attendances");
+                });
+
             modelBuilder.Entity("SchoolManager.Models.Class", b =>
                 {
                     b.Property<Guid>("ClassId")
@@ -475,6 +527,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Section")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
@@ -490,6 +545,239 @@ namespace SchoolManager.Migrations
                     b.ToTable("Classes");
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.Department", b =>
+                {
+                    b.Property<Guid>("DepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("HeadOfDepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("DepartmentId");
+
+                    b.HasIndex("HeadOfDepartmentId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.ExamResult", b =>
+                {
+                    b.Property<Guid>("ResultId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("ExamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Grade")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MarksObtained")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxMarks")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ResultId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("ExamId", "StudentId", "SubjectId")
+                        .IsUnique();
+
+                    b.ToTable("ExamResults");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Examination", b =>
+                {
+                    b.Property<Guid>("ExamId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExamName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ExamType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ExamId");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("ExamName", "ExamType", "StartDate", "ClassId")
+                        .IsUnique();
+
+                    b.ToTable("Examinations");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.FeePayment", b =>
+                {
+                    b.Property<Guid>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("FeeStructureId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("FeeStructureId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("FeePayments");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.FeeStructure", b =>
+                {
+                    b.Property<Guid>("FeeStructureId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FeeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("FeeStructureId");
+
+                    b.HasIndex("ClassId", "FeeType", "AcademicYear")
+                        .IsUnique();
+
+                    b.ToTable("FeeStructures");
+                });
+
             modelBuilder.Entity("SchoolManager.Models.Parent", b =>
                 {
                     b.Property<Guid>("ParentId")
@@ -500,14 +788,25 @@ namespace SchoolManager.Migrations
                     b.Property<decimal?>("AnnualIncome")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Occupation")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Relationship")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -543,6 +842,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -582,6 +884,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Token")
                         .IsRequired()
@@ -629,6 +934,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PermissionName")
                         .IsRequired()
@@ -940,6 +1248,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("GrantedBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -948,6 +1259,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("PermissionId")
                         .HasColumnType("uniqueidentifier");
@@ -972,6 +1286,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Department")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -988,6 +1305,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Position")
                         .HasMaxLength(100)
@@ -1041,8 +1361,11 @@ namespace SchoolManager.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid?>("CurrentClassId")
+                    b.Property<Guid?>("ClassId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("EmergencyContact")
                         .HasMaxLength(500)
@@ -1056,9 +1379,15 @@ namespace SchoolManager.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("MedicalInfo")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
@@ -1070,7 +1399,9 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("StudentId");
 
-                    b.HasIndex("CurrentClassId");
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("StudentNumber")
                         .IsUnique();
@@ -1085,28 +1416,22 @@ namespace SchoolManager.Migrations
                 {
                     b.Property<Guid>("StudentParentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("CanPickupStudent")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsEmergencyContact")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsPrimaryContact")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
@@ -1125,10 +1450,56 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("StudentId", "ParentId", "Relationship")
+                    b.ToTable("StudentParents");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Subject", b =>
+                {
+                    b.Property<Guid>("SubjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Credits")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubjectCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SubjectName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("SubjectId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("SubjectCode")
                         .IsUnique();
 
-                    b.ToTable("StudentParents");
+                    b.HasIndex("SubjectName")
+                        .IsUnique();
+
+                    b.ToTable("Subject");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.TwoFactorToken", b =>
@@ -1160,6 +1531,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -1190,6 +1564,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("DeviceInfo")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -1201,6 +1578,9 @@ namespace SchoolManager.Migrations
                     b.Property<string>("IpAddress")
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Location")
                         .HasMaxLength(100)
@@ -1244,6 +1624,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
@@ -1260,6 +1643,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("PermissionId")
                         .HasColumnType("uniqueidentifier");
@@ -1294,6 +1680,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
@@ -1301,6 +1690,9 @@ namespace SchoolManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -1338,6 +1730,9 @@ namespace SchoolManager.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<DateTime?>("LastActivityDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("LogoutDate")
@@ -1423,6 +1818,25 @@ namespace SchoolManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.Attendance", b =>
+                {
+                    b.HasOne("SchoolManager.Models.Class", "Class")
+                        .WithMany("Attendances")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Student", "Student")
+                        .WithMany("Attendances")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("SchoolManager.Models.Class", b =>
                 {
                     b.HasOne("SchoolManager.Models.Staff", "ClassTeacher")
@@ -1431,6 +1845,85 @@ namespace SchoolManager.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("ClassTeacher");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Department", b =>
+                {
+                    b.HasOne("SchoolManager.Models.Staff", "HeadOfDepartment")
+                        .WithMany()
+                        .HasForeignKey("HeadOfDepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HeadOfDepartment");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.ExamResult", b =>
+                {
+                    b.HasOne("SchoolManager.Models.Examination", "Exam")
+                        .WithMany("ExamResults")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Student", "Student")
+                        .WithMany("ExamResults")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Subject", "Subject")
+                        .WithMany("ExamResults")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Examination", b =>
+                {
+                    b.HasOne("SchoolManager.Models.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.FeePayment", b =>
+                {
+                    b.HasOne("SchoolManager.Models.FeeStructure", "FeeStructure")
+                        .WithMany()
+                        .HasForeignKey("FeeStructureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Student", "Student")
+                        .WithMany("FeePayments")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeeStructure");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.FeeStructure", b =>
+                {
+                    b.HasOne("SchoolManager.Models.Class", "Class")
+                        .WithMany("FeeStructures")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.Parent", b =>
@@ -1498,10 +1991,14 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.Student", b =>
                 {
-                    b.HasOne("SchoolManager.Models.Class", "CurrentClass")
+                    b.HasOne("SchoolManager.Models.Class", "Class")
                         .WithMany("Students")
-                        .HasForeignKey("CurrentClassId")
+                        .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SchoolManager.Models.Parent", null)
+                        .WithMany("Students")
+                        .HasForeignKey("ParentId");
 
                     b.HasOne("SchoolManager.Models.ApplicationUser", "User")
                         .WithOne("Student")
@@ -1509,7 +2006,7 @@ namespace SchoolManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CurrentClass");
+                    b.Navigation("Class");
 
                     b.Navigation("User");
                 });
@@ -1519,18 +2016,29 @@ namespace SchoolManager.Migrations
                     b.HasOne("SchoolManager.Models.Parent", "Parent")
                         .WithMany("StudentParents")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolManager.Models.Student", "Student")
                         .WithMany("StudentParents")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Parent");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Subject", b =>
+                {
+                    b.HasOne("SchoolManager.Models.Department", "Department")
+                        .WithMany("Subjects")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.TwoFactorToken", b =>
@@ -1630,12 +2138,28 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.Class", b =>
                 {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("FeeStructures");
+
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Department", b =>
+                {
+                    b.Navigation("Subjects");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Examination", b =>
+                {
+                    b.Navigation("ExamResults");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.Parent", b =>
                 {
                     b.Navigation("StudentParents");
+
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.Permission", b =>
@@ -1647,7 +2171,18 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.Student", b =>
                 {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("ExamResults");
+
+                    b.Navigation("FeePayments");
+
                     b.Navigation("StudentParents");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Subject", b =>
+                {
+                    b.Navigation("ExamResults");
                 });
 #pragma warning restore 612, 618
         }

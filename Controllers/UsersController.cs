@@ -15,17 +15,20 @@ namespace SchoolManager.Controllers
         private readonly IUserService _userService;
         private readonly IPasswordService _passwordService;
         private readonly IAuthenticationService _authService;
+        private readonly IUserMapper _userMapper;
         private readonly ILogger<UsersController> _logger;
 
         public UsersController(
             IUserService userService,
             IPasswordService passwordService,
             IAuthenticationService authService,
+            IUserMapper userMapper,
             ILogger<UsersController> logger)
         {
             _userService = userService;
             _passwordService = passwordService;
             _authService = authService;
+            _userMapper = userMapper;
             _logger = logger;
         }
 
@@ -41,14 +44,14 @@ namespace SchoolManager.Controllers
             try
             {
                 var users = await _userService.GetUsersAsync(page, pageSize);
-                var userDtos = users.Select(MapToUserDto).ToList();
+                var userDtos = users.Select(_userMapper.MapToUserDto).ToList();
 
                 var result = new PagedResult<UserDto>
                 {
                     Items = userDtos,
                     Page = page,
                     PageSize = pageSize,
-                    TotalCount = userDtos.Count // In real implementation, get actual count
+                    TotalCount = await _userService.GetTotalUserCountAsync()
                 };
 
                 return Ok(new ApiResponse<PagedResult<UserDto>>
@@ -87,7 +90,7 @@ namespace SchoolManager.Controllers
                     });
                 }
 
-                var userDto = MapToUserDto(user);
+                var userDto = _userMapper.MapToUserDto(user);
                 return Ok(new ApiResponse<UserDto>
                 {
                     Success = true,
@@ -125,7 +128,7 @@ namespace SchoolManager.Controllers
                     });
                 }
 
-                var userDto = MapToUserDto(user);
+                var userDto = _userMapper.MapToUserDto(user);
                 return Ok(new ApiResponse<UserDto>
                 {
                     Success = true,
@@ -182,12 +185,22 @@ namespace SchoolManager.Controllers
                     CreatedBy = GetCurrentUserId().ToString()
                 };
 
+                if (await _userService.EmailExistsAsync(request.Email))
+                {
+                    return BadRequest(new ApiResponse<UserDto>
+                    {
+                        Success = false,
+                        Message = "Email is already taken"
+                    });
+                }
+
                 var result = await _userService.CreateUserAsync(user, request.Password);
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User {Email} created successfully", request.Email);
-                    var userDto = MapToUserDto(user);
+                    var userDto = _userMapper.MapToUserDto(user);
+
                     return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new ApiResponse<UserDto>
                     {
                         Success = true,
@@ -255,7 +268,8 @@ namespace SchoolManager.Controllers
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User {UserId} updated successfully", id);
-                    var userDto = MapToUserDto(user);
+                    var userDto = _userMapper.MapToUserDto(user);
+
                     return Ok(new ApiResponse<UserDto>
                     {
                         Success = true,
@@ -538,36 +552,16 @@ namespace SchoolManager.Controllers
         private Guid GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+
+            if (!Guid.TryParse(userIdClaim, out var userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt - invalid user ID claim");
+                throw new UnauthorizedAccessException("Invalid user ID in claims.");
+            }
+                
+            return userId;
         }
 
-        private UserDto MapToUserDto(ApplicationUser user)
-        {
-            return new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email ?? string.Empty,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                MiddleName = user.MiddleName,
-                FullName = user.FullName,
-                PhoneNumber = user.PhoneNumber,
-                Gender = user.Gender,
-                DateOfBirth = user.DateOfBirth,
-                Address = user.Address,
-                City = user.City,
-                State = user.State,
-                PostalCode = user.PostalCode,
-                Country = user.Country,
-                AlternatePhoneNumber = user.AlternatePhoneNumber,
-                ProfilePictureUrl = user.ProfilePictureUrl,
-                IsActive = user.IsActive,
-                CreatedDate = user.CreatedDate,
-                LastLoginDate = user.LastLoginDate,
-                // These would be populated from service calls in real implementation
-                Roles = new List<string>(),
-                Permissions = new List<string>()
-            };
-        }
+        
     }
 }

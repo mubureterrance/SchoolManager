@@ -18,5 +18,8 @@ namespace SchoolManager.Services
         Task<bool> ValidatePasswordAsync(ApplicationUser user, string password);
         Task<List<string>> GetUserPermissionsAsync(Guid userId);
         Task<bool> HasPermissionAsync(Guid userId, string permission);
+        Task<int> GetTotalUserCountAsync();
+        Task<bool> EmailExistsAsync(string email);
+
     }
 }

@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
     /// <summary>
     /// Student-Parent relationship junction table
     /// </summary>
-    public class StudentParent
+    public class StudentParent : IAuditableEntity
     {
         [Key]
         public Guid StudentParentId { get; set; }
@@ -23,7 +24,9 @@ namespace SchoolManager.Models
 
         public bool CanPickupStudent { get; set; } = true;
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedDate { get; set; }
+
+        public DateTime? LastModifiedDate { get; set; }
 
         // Navigation Properties
         public virtual Student Student { get; set; } = null!;

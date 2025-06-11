@@ -36,14 +36,14 @@ namespace SchoolManager.Services.Implementations
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<bool> ValidatePasswordPolicyAsync(string password)
+        public Task<bool> ValidatePasswordPolicyAsync(string password)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(password))
                 {
                     _logger.LogWarning("Password validation failed - Empty password");
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 var minLength = _configuration.GetValue<int>(MinLengthKey, 12);
@@ -99,15 +99,15 @@ namespace SchoolManager.Services.Implementations
                 if (validationErrors.Any())
                 {
                     _logger.LogInformation("Password validation failed: {Errors}", string.Join(", ", validationErrors));
-                    return false;
+                    return Task.FromResult(false);
                 }
 
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating password policy");
-                return false;
+                return Task.FromResult(false);
             }
         }
 

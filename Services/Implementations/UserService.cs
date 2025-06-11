@@ -227,15 +227,7 @@ namespace SchoolManager.Services.Implementations
 
                 if (result.Succeeded)
                 {
-                    // Add new password to history
-                    await _passwordService.AddPasswordToHistoryAsync(userId, user.PasswordHash!);
-
-                    // Update password change flag
-                    user.RequirePasswordChange = false;
-                    user.LastModifiedDate = DateTime.UtcNow;
-
-                    // Update user in database
-                    await _userManager.UpdateAsync(user);
+                    await HandlePasswordPostProcessingAsync(user, user.PasswordHash!);
 
                     // Log successful password change
                     _logger.LogInformation("Password changed successfully for user {UserId}", userId);
@@ -298,15 +290,7 @@ namespace SchoolManager.Services.Implementations
 
                 if (result.Succeeded)
                 {
-                    // Add new password to history
-                    await _passwordService.AddPasswordToHistoryAsync(userId, user.PasswordHash!);
-
-                    // Update password change flag and dates
-                    user.RequirePasswordChange = false;
-                    user.LastModifiedDate = DateTime.UtcNow;
-
-                    // Update user in database
-                    await _userManager.UpdateAsync(user);
+                    await HandlePasswordPostProcessingAsync(user, user.PasswordHash!);
 
                     _logger.LogInformation("Password reset successfully for user {UserId}", userId);
                 }
@@ -328,6 +312,32 @@ namespace SchoolManager.Services.Implementations
                 });
             }
         }
+
+        private async Task HandlePasswordPostProcessingAsync(ApplicationUser user, string hashedPassword)
+        {
+            try
+            {
+                // 1. Add new password hash to password history
+                await _passwordService.AddPasswordToHistoryAsync(user.Id, hashedPassword);
+
+                // 2. Reset password change requirement flag
+                user.RequirePasswordChange = false;
+
+                // 3. Update last modified date
+                user.LastModifiedDate = DateTime.UtcNow;
+
+                // 4. Persist changes
+                await _userManager.UpdateAsync(user);
+
+                _logger.LogInformation("Post-password change updates applied for user {UserId}", user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed during post-password handling for user {UserId}", user.Id);
+                throw; // Let the upper method decide how to handle this
+            }
+        }
+
 
         public async Task<string> GeneratePasswordResetTokenAsync(Guid userId)
         {
@@ -422,6 +432,21 @@ namespace SchoolManager.Services.Implementations
                 _logger.LogError(ex, "Error checking permission {Permission} for user {UserId}", permission, userId);
                 return false;
             }
+        }
+
+        public async Task<int> GetTotalUserCountAsync()
+        {
+            return await _context.Users.CountAsync(u => u.IsActive);
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+
+            return await _context.Users
+                .AnyAsync(u => u.Email != null &&
+                               u.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
+                               u.IsActive);
         }
 
     }

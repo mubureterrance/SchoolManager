@@ -101,6 +101,77 @@ namespace SchoolManager.Enums
         NotSpecifie = 4,
     }
 
+    public enum AttendanceStatus
+    {
+        [Description("Present")]
+        Present = 1,
+
+        [Description("Absent")]
+        Absent = 2,
+
+        [Description("Late")]
+        Late =3
+    }
+
+    public enum ExamStatus
+    {
+        [Description("Up Coming")]
+        Upcoming = 1,
+
+        [Description("On Going")]
+        OnGoing = 2,
+
+        [Description("Completed")]
+        Completed =3,
+
+        [Description("Cancelled")]
+        Cancelled = 4,
+    }
+
+    public enum PaymentStatus
+    {
+        [Description("Pending")]
+        Pending = 1,
+
+        [Description("Completed")]
+        Completed = 2,
+
+        [Description("Failed")]
+        Failed = 3,
+
+        [Description("Reversed")]
+        Reversed = 4
+    }
+
+    public enum PaymentMethod
+    {
+        [Description("Cash")]
+        Cash = 1,
+
+        [Description("Bank Transfer")]
+        BankTransfer = 2,
+
+        [Description("Mobile Money")]
+        MobileMoney = 3,
+
+        [Description("Credit Card")]
+        CreditCard = 4,
+
+        [Description("Debit Card")]
+        DebitCard = 5,
+
+        [Description("Cheque")]
+        Cheque = 6,
+
+        [Description("On-line Payment")]
+        OnlinePayment = 7,
+
+        [Description("Point of Sale")]
+        POS = 8 // Point of Sale
+
+    }
+
+
     public static class Helpers
     {
         private static readonly ConcurrentDictionary<Enum, string> DisplayNameCache = new();

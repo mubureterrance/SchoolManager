@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Models.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +10,7 @@ namespace SchoolManager.Models
     /// <summary>
     /// User session management for tracking active sessions
     /// </summary>
-    public class UserSession
+    public class UserSession : IAuditableEntity
     {
         [Key]
         public Guid SessionId { get; set; }
@@ -23,8 +24,8 @@ namespace SchoolManager.Models
         [StringLength(500)]
         public string? RefreshToken { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-
+        public DateTime CreatedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
         public DateTime ExpiryDate { get; set; }
 
         public DateTime? RefreshTokenExpiryDate { get; set; }
