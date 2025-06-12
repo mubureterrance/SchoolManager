@@ -95,10 +95,10 @@ namespace SchoolManager.Services.Implementations
 
                 var parents = student.StudentParents.Select(p => new StudentParentDto
                                             {
-                                                FullName = p.Parent?.User?.FullName,
-                                                Relationship = p.RelationshipToStudent,
-                                                PhoneNumber = p.Parent?.User?.PhoneNumber,
-                                                Email = p.Parent?.User?.Email,
+                                                ParentFullName = p.Parent.User.FullName,
+                                                RelationshipToStudent = p.RelationshipToStudent,
+                                                ParentPhoneNumber = p.Parent?.User?.PhoneNumber,
+                                                ParentEmail = p.Parent?.User?.Email,
                     IsPrimaryContact = p.IsPrimaryContact
                                             }).ToList();
 
@@ -149,10 +149,10 @@ namespace SchoolManager.Services.Implementations
 
                 var parents = student.StudentParents.Select(p => new StudentParentDto
                 {
-                    FullName = p.Parent?.User?.FullName,
-                    Relationship = p.RelationshipToStudent,
-                    PhoneNumber = p.Parent?.User?.PhoneNumber,
-                    Email = p.Parent?.User?.Email,
+                    ParentFullName = p.Parent.User.FullName,
+                    RelationshipToStudent = p.RelationshipToStudent,
+                    ParentPhoneNumber = p.Parent?.User?.PhoneNumber,
+                    ParentEmail = p.Parent?.User?.Email,
                     IsPrimaryContact = p.IsPrimaryContact
                 }).ToList();
 

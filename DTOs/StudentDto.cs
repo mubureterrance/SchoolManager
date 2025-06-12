@@ -101,12 +101,12 @@ namespace SchoolManager.DTOs
         public DateTime ExamDate { get; set; }
     }
 
-    public class StudentParentDto
-    {
-        public string? FullName { get; set; }
-        public ParentRelationship? Relationship { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? Email { get; set; } = null;
-        public bool IsPrimaryContact { get; set; }
-    }
+    //public class StudentParentDto
+    //{
+    //    public string? FullName { get; set; }
+    //    public ParentRelationship? Relationship { get; set; }
+    //    public string? PhoneNumber { get; set; }
+    //    public string? Email { get; set; } = null;
+    //    public bool IsPrimaryContact { get; set; }
+    //}
 }

@@ -20,6 +20,7 @@ namespace SchoolManager.Services
         Task<bool> HasPermissionAsync(Guid userId, string permission);
         Task<int> GetTotalUserCountAsync();
         Task<bool> EmailExistsAsync(string email);
+        Task<bool> UserExistsAsync(Guid userId);
 
     }
 }

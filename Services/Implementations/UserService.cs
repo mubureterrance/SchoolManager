@@ -449,5 +449,11 @@ namespace SchoolManager.Services.Implementations
                                u.IsActive);
         }
 
+        public async Task<bool> UserExistsAsync(Guid userId)
+        {
+            return await _context.Users
+                .AnyAsync(u => u.Id == userId && u.IsActive);
+        }
+
     }
 }
