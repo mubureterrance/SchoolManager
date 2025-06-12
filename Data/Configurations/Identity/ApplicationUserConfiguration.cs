@@ -56,6 +56,9 @@ namespace SchoolManager.Data.Configurations.Identity
                    .WithOne(ph => ph.User)
                    .HasForeignKey(ph => ph.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(u => u.Gender)
+                   .HasConversion<string>();
         }
     }
 }

@@ -171,6 +171,21 @@ namespace SchoolManager.Enums
 
     }
 
+    public enum ParentRelationship
+    {
+        [Description("Mother")]
+        Mother = 1,
+
+        [Description("Father")]
+        Father = 2,
+
+        [Description("Guardian")]
+        Guardian = 3,
+
+        [Description("Other")]
+        Other = 4
+    }
+
 
     public static class Helpers
     {

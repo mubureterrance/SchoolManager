@@ -1,4 +1,5 @@
-﻿using SchoolManager.Models.Base;
+﻿using SchoolManager.Enums;
+using SchoolManager.Models.Base;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,10 +15,6 @@ namespace SchoolManager.Models
 
         [Required]
         public Guid UserId { get; set; }
-
-        [Required]
-        [StringLength(20)]
-        public string Relationship { get; set; } = string.Empty;
 
         [StringLength(50)]
         public string? Occupation { get; set; }
@@ -39,6 +36,5 @@ namespace SchoolManager.Models
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; } = null!;
         public virtual ICollection<StudentParent> StudentParents { get; set; } = new List<StudentParent>();
-        public virtual ICollection<Student> Students { get; set; } = new List<Student>();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.DTOs;
@@ -28,7 +29,8 @@ namespace SchoolManager.Services.Implementations
                     .Include(s => s.User)
                     .Include(s => s.Class)
                     .Include(s => s.StudentParents)
-                        .ThenInclude(g => g.Parent)
+                        .ThenInclude(sp => sp.Parent)
+                            .ThenInclude(p => p.User)
                     .AsQueryable();
 
                 if (classId.HasValue)
@@ -50,8 +52,11 @@ namespace SchoolManager.Services.Implementations
                         PhoneNumber = s.User.PhoneNumber,
                         Address = s.User.Address,
                         AdmissionDate = s.AdmissionDate,
-                        ClassName = s.Class!.ClassName ?? "N/A",
-                        //GuardianName = s.StudentParents != null ? s.StudentParents.FirstOrDefault(p : null,
+                        ClassName = s.Class != null ? s.Class.ClassName : "N/A",
+                        GuardianName = s.StudentParents
+                            .Where(sp => sp.IsPrimaryContact && sp.Parent != null && sp.Parent.User != null)
+                            .Select(sp => sp.Parent.User.FullName)
+                            .FirstOrDefault() ?? "N/A",
                         MedicalInfo = s.MedicalInfo,
                         EmergencyContact = s.EmergencyContact,
                         IsActive = s.IsActive
@@ -66,6 +71,7 @@ namespace SchoolManager.Services.Implementations
                 throw;
             }
         }
+
 
         public async Task<StudentDto?> GetStudentByIdAsync(Guid studentId)
         {
@@ -90,7 +96,7 @@ namespace SchoolManager.Services.Implementations
                 var parents = student.StudentParents.Select(p => new StudentParentDto
                                             {
                                                 FullName = p.Parent?.User?.FullName,
-                                                Relationship = p.Relationship,
+                                                Relationship = p.RelationshipToStudent,
                                                 PhoneNumber = p.Parent?.User?.PhoneNumber,
                                                 Email = p.Parent?.User?.Email,
                     IsPrimaryContact = p.IsPrimaryContact
@@ -144,7 +150,7 @@ namespace SchoolManager.Services.Implementations
                 var parents = student.StudentParents.Select(p => new StudentParentDto
                 {
                     FullName = p.Parent?.User?.FullName,
-                    Relationship = p.Relationship,
+                    Relationship = p.RelationshipToStudent,
                     PhoneNumber = p.Parent?.User?.PhoneNumber,
                     Email = p.Parent?.User?.Email,
                     IsPrimaryContact = p.IsPrimaryContact
@@ -184,7 +190,6 @@ namespace SchoolManager.Services.Implementations
                 var user = new ApplicationUser
                 {
                     Email = createStudentDto.Email,
-                    PasswordHash = HashPassword("TempPassword123"), // Temporary password
                     FirstName = createStudentDto.FirstName,
                     MiddleName = createStudentDto.MiddleName,
                     LastName = createStudentDto.LastName,
@@ -197,9 +202,14 @@ namespace SchoolManager.Services.Implementations
                     PostalCode = createStudentDto.PostalCode,
                     Country = createStudentDto.Country,
                     AlternatePhoneNumber = createStudentDto.AlternatePhoneNumber,
+                    IsActive = createStudentDto.IsActive
                 };
 
-                _context.Users.Add(user);
+                // Hash password using ASP.NET Core Identity hasher 
+                var passwordHasher = new PasswordHasher<ApplicationUser>();
+                user.PasswordHash = passwordHasher.HashPassword(user, "TempPassword@123");
+
+                await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
 
                 // Generate student number
@@ -217,10 +227,9 @@ namespace SchoolManager.Services.Implementations
                     BloodGroup = createStudentDto.BloodGroup,
                     Allergies = createStudentDto.Allergies,
                     IsActive = createStudentDto.IsActive,
-                    CreatedDate = createStudentDto.CreatedDate
                 };
 
-                _context.Students.Add(student);
+                await _context.Students.AddAsync(student);
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
@@ -268,7 +277,6 @@ namespace SchoolManager.Services.Implementations
                 student.MedicalInfo = updateStudentDto.MedicalInfo;
                 student.EmergencyContact = updateStudentDto.EmergencyContact;
                 student.IsActive = updateStudentDto.IsActive;
-                student.LastModifiedDate = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
                 return true;

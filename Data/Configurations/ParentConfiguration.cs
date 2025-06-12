@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SchoolManager.Models;
+using System.Reflection.Emit;
 
 namespace SchoolManager.Data.Configurations
 {
@@ -23,6 +24,7 @@ namespace SchoolManager.Data.Configurations
                    .WithOne(sp => sp.Parent)
                    .HasForeignKey(sp => sp.ParentId)
                    .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

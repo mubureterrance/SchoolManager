@@ -1,4 +1,5 @@
-﻿using SchoolManager.Models.Base;
+﻿using SchoolManager.Enums;
+using SchoolManager.Models.Base;
 using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
@@ -15,8 +16,7 @@ namespace SchoolManager.Models
 
         public Guid ParentId { get; set; }
 
-        [StringLength(20)]
-        public string Relationship { get; set; } = string.Empty; // Father, Mother, Guardian, etc.
+        public ParentRelationship RelationshipToStudent { get; set; }
 
         public bool IsPrimaryContact { get; set; } = false;
 

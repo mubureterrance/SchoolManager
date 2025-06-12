@@ -16,7 +16,5 @@ namespace SchoolManager.Services
         Task<bool> TransferStudentAsync(Guid studentId, Guid newClassId);
         Task<int> GetStudentCountByClassAsync(Guid classId);
         Task<IEnumerable<StudentDto>> SearchStudentsAsync(string searchTerm);
-        
-
     }
 }
