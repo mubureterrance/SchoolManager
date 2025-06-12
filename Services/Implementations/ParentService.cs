@@ -60,7 +60,7 @@ namespace SchoolManager.Services.Implementations
                     CreatedDate = DateTime.UtcNow
                 };
 
-                _context.Parents.Add(parent);
+                await _context.Parents.AddAsync(parent);
                 await _context.SaveChangesAsync();
 
                 var parentDto = await GetParentDtoAsync(parent.ParentId);
@@ -159,7 +159,7 @@ namespace SchoolManager.Services.Implementations
             }
         }
 
-        public async Task<ServiceResult<bool>> DeleteParentAsync(Guid parentId)
+        public async Task<ServiceResult<bool>> PermanentlyDeleteParentAsync(Guid parentId)
         {
             try
             {

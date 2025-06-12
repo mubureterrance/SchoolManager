@@ -10,7 +10,7 @@ namespace SchoolManager.Services
         Task<ServiceResult<ParentDto>> GetParentByIdAsync(Guid parentId);
         Task<ServiceResult<ParentDto>> GetParentByUserIdAsync(Guid userId);
         Task<ServiceResult<ParentDto>> UpdateParentAsync(Guid parentId, UpdateParentDto updateParentDto);
-        Task<ServiceResult<bool>> DeleteParentAsync(Guid parentId);
+        Task<ServiceResult<bool>> PermanentlyDeleteParentAsync(Guid parentId);
         Task<ServiceResult<bool>> DeactivateParentAsync(Guid parentId);
         Task<ServiceResult<bool>> ActivateParentAsync(Guid parentId);
 
