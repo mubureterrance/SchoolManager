@@ -14,7 +14,6 @@ namespace SchoolManager.Data.Configurations
             builder.HasIndex(e => e.EmployeeNumber).IsUnique();
 
             builder.HasIndex(s => s.UserId);
-            builder.HasIndex(s => s.Department);
 
             builder.HasOne(s => s.User)
                    .WithOne(u => u.Staff)

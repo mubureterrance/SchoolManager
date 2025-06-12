@@ -46,6 +46,7 @@ namespace SchoolManager.Data
         public DbSet<StudentParent> StudentParents { get; set; }
         public DbSet<Class> Classes { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<StaffDepartment> StaffDepartments { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Examination> Examinations { get; set; }
         public DbSet<ExamResult> ExamResults { get; set; }
